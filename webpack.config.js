@@ -1,33 +1,44 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  entry: './src/index.js',
+  entry: "./src/index.js",
   module: {
     rules: [
       {
-        test: /\.pcss$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              postcssOptions: {
-                plugins: [
-                  require('postcss-simple-vars'),
-                  require('postcss-nested-ancestors'),
-                  require('postcss-nested'),
-                ],
-              },
-            },
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              [
+                "@babel/preset-env",
+                {
+                  targets: {
+                    esmodules: true,
+                  },
+                },
+              ],
+            ],
           },
+        },
+      },
+      {
+        test: [/\.s[ac]ss$/i, /\.css$/i],
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
         ],
       },
       {
         test: /\.svg$/i,
         use: [
           {
-            loader: 'raw-loader',
+            loader: "raw-loader",
             options: {
               esModule: false,
             },
@@ -37,13 +48,13 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: [ '.js' ],
+    extensions: [".js"],
   },
   output: {
-    filename: 'link-autocomplete.js',
-    path: path.resolve(__dirname, 'dist'),
-    library: 'LinkAutocomplete',
-    libraryTarget: 'umd',
-    libraryExport: 'default',
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
+    library: "Snippets",
+    libraryTarget: "umd",
+    libraryExport: "default",
   },
 };
