@@ -10,7 +10,7 @@ $loader-color: rgba(29, 32, 43, 0.3);
   color: crimson;
 }
 
-.ce-link-autocomplete {
+.ts-snippets {
   &__icon-wrapper svg {
     display: block;
     width: 16px;
@@ -69,7 +69,7 @@ $loader-color: rgba(29, 32, 43, 0.3);
     }
 
     &--loading::after {
-      animation: ce-link-autocomplete__spin 1s linear infinite;
+      animation: ts-snippets__spin 1s linear infinite;
       opacity: 1;
     }
   }
@@ -168,7 +168,7 @@ $loader-color: rgba(29, 32, 43, 0.3);
   }
 }
 
-@keyframes ce-link-autocomplete__spin {
+@keyframes ts-snippets__spin {
   0% {
     transform: rotate(0deg);
   }

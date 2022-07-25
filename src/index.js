@@ -23,11 +23,11 @@ import { Utils } from "./utils/utils";
  */
 
 const DICTIONARY = {
-  pasteOrSearch: "Paste or search",
-  pasteALink: "Paste a link",
+  searchASnippet: "Search a snippet",
+  noSnippetAvailable: "There are no snippets available...",
   searchRequestError: "Cannot process search request because of",
   invalidServerData: "Server responded with invalid data",
-  invalidUrl: "Link URL is invalid",
+  invalidSnippetName: "Incorrect snippet name",
 };
 
 /**
@@ -53,7 +53,7 @@ const NavDirection = {
 /**
  * Link Autocomplete Tool for EditorJS
  */
-export default class LinkAutocomplete {
+export default class Snippets {
   /**
    * Specifies Tool as Inline Toolbar Tool
    *
@@ -65,7 +65,7 @@ export default class LinkAutocomplete {
 
   /**
    * Sanitizer Rule
-   * Leave <a> tags
+   * Leave <span class="className"> tags
    *
    * @returns {object}
    */
@@ -102,28 +102,28 @@ export default class LinkAutocomplete {
    */
   static get CSS() {
     return {
-      iconWrapper: "ce-link-autocomplete__icon-wrapper",
+      iconWrapper: "ts-snippets__icon-wrapper",
 
-      hidden: "ce-link-autocomplete__hidden",
+      hidden: "ts-snippets__hidden",
 
-      actionsWrapper: "ce-link-autocomplete__actions-wrapper",
+      actionsWrapper: "ts-snippets__actions-wrapper",
 
-      field: "ce-link-autocomplete__field",
-      fieldLoading: "ce-link-autocomplete__field--loading",
-      fieldInput: "ce-link-autocomplete__field-input",
+      field: "ts-snippets__field",
+      fieldLoading: "ts-snippets__field--loading",
+      fieldInput: "ts-snippets__field-input",
 
-      foundItems: "ce-link-autocomplete__items",
+      foundItems: "ts-snippets__items",
 
-      searchItem: "ce-link-autocomplete__search-item",
-      searchItemSelected: "ce-link-autocomplete__search-item--selected",
-      searchItemName: "ce-link-autocomplete__search-item-name",
-      searchItemDescription: "ce-link-autocomplete__search-item-description",
+      searchItem: "ts-snippets__search-item",
+      searchItemSelected: "ts-snippets__search-item--selected",
+      searchItemName: "ts-snippets__search-item-name",
+      searchItemDescription: "ts-snippets__search-item-description",
 
-      linkDataWrapper: "ce-link-autocomplete__link-data-wrapper",
-      linkDataTitleWrapper: "ce-link-autocomplete__link-data-title-wrapper",
-      linkDataName: "ce-link-autocomplete__link-data-name",
-      linkDataDescription: "ce-link-autocomplete__link-data-description",
-      linkDataURL: "ce-link-autocomplete__link-data-url",
+      linkDataWrapper: "ts-snippets__link-data-wrapper",
+      linkDataTitleWrapper: "ts-snippets__link-data-title-wrapper",
+      linkDataName: "ts-snippets__link-data-name",
+      linkDataDescription: "ts-snippets__link-data-description",
+      linkDataURL: "ts-snippets__link-data-url",
     };
   }
 
@@ -145,7 +145,7 @@ export default class LinkAutocomplete {
     /**
      * Config params
      */
-    this.searchEndpointUrl = this.config.endpoint;
+    this.filesToSearch = this.config.filesToSearch;
     this.searchQueryParam = this.config.queryParam;
 
     /**
@@ -193,7 +193,7 @@ export default class LinkAutocomplete {
     /**
      * Define tag name for a link element
      */
-    this.tagName = "span";
+    this.tagName = "SPAN";
 
     /**
      * Key codes
@@ -231,13 +231,9 @@ export default class LinkAutocomplete {
      *
      * @type {HTMLSpanElement}
      */
-    this.nodes.toolButtonLink = Dom.make(
-      "span",
-      LinkAutocomplete.CSS.iconWrapper,
-      {
-        innerHTML: require("../icons/snippet-add.svg"),
-      }
-    );
+    this.nodes.toolButtonLink = Dom.make("span", Snippets.CSS.iconWrapper, {
+      innerHTML: require("../icons/snippet-add.svg"),
+    });
     this.nodes.toolButtons.appendChild(this.nodes.toolButtonLink);
 
     /**
@@ -245,13 +241,9 @@ export default class LinkAutocomplete {
      *
      * @type {HTMLSpanElement}
      */
-    this.nodes.toolButtonUnlink = Dom.make(
-      "span",
-      LinkAutocomplete.CSS.iconWrapper,
-      {
-        innerHTML: require("../icons/snippet-remove.svg"),
-      }
-    );
+    this.nodes.toolButtonUnlink = Dom.make("span", Snippets.CSS.iconWrapper, {
+      innerHTML: require("../icons/snippet-remove.svg"),
+    });
     this.nodes.toolButtons.appendChild(this.nodes.toolButtonUnlink);
     this.toggleVisibility(this.nodes.toolButtonUnlink, false);
 
@@ -269,9 +261,7 @@ export default class LinkAutocomplete {
      *
      * @type {HTMLDivElement}
      */
-    this.nodes.actionsWrapper = Dom.make("div", [
-      LinkAutocomplete.CSS.actionsWrapper,
-    ]);
+    this.nodes.actionsWrapper = Dom.make("div", [Snippets.CSS.actionsWrapper]);
     this.toggleVisibility(this.nodes.actionsWrapper, false);
 
     /**
@@ -279,10 +269,12 @@ export default class LinkAutocomplete {
      *
      * @type {HTMLDivElement}
      */
-    this.nodes.inputWrapper = Dom.make("div", LinkAutocomplete.CSS.field);
-    this.nodes.inputField = Dom.make("input", LinkAutocomplete.CSS.fieldInput, {
+    this.nodes.inputWrapper = Dom.make("div", Snippets.CSS.field);
+    this.nodes.inputField = Dom.make("input", Snippets.CSS.fieldInput, {
       placeholder: this.api.i18n.t(
-        this.isServerEnabled ? DICTIONARY.pasteOrSearch : DICTIONARY.pasteALink
+        this.isThereFilesToSearch
+          ? DICTIONARY.searchASnippet
+          : DICTIONARY.noSnippetAvailable
       ),
     });
 
@@ -294,7 +286,7 @@ export default class LinkAutocomplete {
      *
      * @type {HTMLDivElement}
      */
-    this.nodes.searchResults = Dom.make("div", LinkAutocomplete.CSS.foundItems);
+    this.nodes.searchResults = Dom.make("div", Snippets.CSS.foundItems);
     /**
      * To improve UX we need to remove any 'selected' classes from search results
      */
@@ -302,7 +294,7 @@ export default class LinkAutocomplete {
       const searchItems = this.getSearchItems();
 
       searchItems.forEach((item) => {
-        item.classList.remove(LinkAutocomplete.CSS.searchItemSelected);
+        item.classList.remove(Snippets.CSS.searchItemSelected);
       });
     });
     /**
@@ -310,7 +302,7 @@ export default class LinkAutocomplete {
      */
     this.nodes.searchResults.addEventListener("click", (event) => {
       const closestSearchItem = event.target.closest(
-        `.${LinkAutocomplete.CSS.searchItem}`
+        `.${Snippets.CSS.searchItem}`
       );
 
       /**
@@ -347,32 +339,27 @@ export default class LinkAutocomplete {
 
     /**
      * Render link data block
+     * TODO: CHange this block accordingly
      */
-    this.nodes.linkDataWrapper = Dom.make(
-      "div",
-      LinkAutocomplete.CSS.linkDataWrapper
-    );
+    this.nodes.linkDataWrapper = Dom.make("div", Snippets.CSS.linkDataWrapper);
     this.toggleVisibility(this.nodes.linkDataWrapper, false);
 
     this.nodes.linkDataTitleWrapper = Dom.make(
       "div",
-      LinkAutocomplete.CSS.linkDataTitleWrapper
+      Snippets.CSS.linkDataTitleWrapper
     );
     this.nodes.linkDataWrapper.appendChild(this.nodes.linkDataTitleWrapper);
     this.toggleVisibility(this.nodes.linkDataTitleWrapper, false);
 
-    this.nodes.linkDataName = Dom.make(
-      "div",
-      LinkAutocomplete.CSS.linkDataName
-    );
+    this.nodes.linkDataName = Dom.make("div", Snippets.CSS.linkDataName);
     this.nodes.linkDataTitleWrapper.appendChild(this.nodes.linkDataName);
     this.nodes.linkDataDescription = Dom.make(
       "div",
-      LinkAutocomplete.CSS.linkDataDescription
+      Snippets.CSS.linkDataDescription
     );
     this.nodes.linkDataTitleWrapper.appendChild(this.nodes.linkDataDescription);
 
-    this.nodes.linkDataURL = Dom.make("A", LinkAutocomplete.CSS.linkDataURL);
+    this.nodes.linkDataURL = Dom.make("A", Snippets.CSS.linkDataURL);
     this.nodes.linkDataWrapper.appendChild(this.nodes.linkDataURL);
 
     /**
@@ -463,7 +450,7 @@ export default class LinkAutocomplete {
     /**
      * If no server endpoint then do nothing
      */
-    if (!this.isServerEnabled) {
+    if (!this.isThereFilesToSearch) {
       return;
     }
 
@@ -500,10 +487,7 @@ export default class LinkAutocomplete {
    * @returns {void}
    */
   toggleLoadingState(state) {
-    this.nodes.inputWrapper.classList.toggle(
-      LinkAutocomplete.CSS.fieldLoading,
-      state
-    );
+    this.nodes.inputWrapper.classList.toggle(Snippets.CSS.fieldLoading, state);
   }
 
   /**
@@ -538,10 +522,10 @@ export default class LinkAutocomplete {
     }
 
     if (selectedItem) {
-      selectedItem.classList.remove(LinkAutocomplete.CSS.searchItemSelected);
+      selectedItem.classList.remove(Snippets.CSS.searchItemSelected);
     }
 
-    items[nextIndex].classList.add(LinkAutocomplete.CSS.searchItemSelected);
+    items[nextIndex].classList.add(Snippets.CSS.searchItemSelected);
   }
 
   /**
@@ -569,34 +553,33 @@ export default class LinkAutocomplete {
     /**
      * Get input field value
      */
-    const href = this.nodes.inputField.value;
+    const index = this.nodes.inputField.value;
 
     /**
      * If input field is empty then do nothing
      */
-    if (!href || !href.trim()) {
-      return;
-    }
-
-    /**
-     * If input is not a valid url then show an error
-     */
-    if (!Utils.isUrl(href)) {
-      notifier.show({
-        message: DICTIONARY.invalidUrl,
-        style: "error",
-      });
-
+    if (!index || !index.trim()) {
       return;
     }
 
     /**
      * Get the first item from the search list
-     * This item exists because input href is valid
      *
      * @type {Element}
      */
     const composedItem = this.getSearchItems()[0];
+
+    /**
+     * If input is not the first name on the list then show an error
+     */
+
+    if (!composedItem || composedItem.dataset.index !== index.toLowerCase()) {
+      notifier.show({
+        message: DICTIONARY.invalidSnippetName,
+        style: "error",
+      });
+      return;
+    }
 
     /**
      * "Press" search item
@@ -611,7 +594,7 @@ export default class LinkAutocomplete {
    */
   getSearchItems() {
     const nodesList = this.nodes.searchResults.querySelectorAll(
-      `.${LinkAutocomplete.CSS.searchItem}`
+      `.${Snippets.CSS.searchItem}`
     );
 
     return Array.from(nodesList);
@@ -624,7 +607,7 @@ export default class LinkAutocomplete {
    */
   getSelectedItem() {
     return this.nodes.searchResults.querySelector(
-      `.${LinkAutocomplete.CSS.searchItemSelected}`
+      `.${Snippets.CSS.searchItemSelected}`
     );
   }
 
@@ -672,18 +655,14 @@ export default class LinkAutocomplete {
      * Fill up search list by new elements
      */
     items.forEach((item) => {
-      const searchItem = Dom.make("div", [LinkAutocomplete.CSS.searchItem]);
+      const searchItem = Dom.make("div", [Snippets.CSS.searchItem]);
 
       /**
        * Create a name for a link
        */
-      const searchItemName = Dom.make(
-        "div",
-        [LinkAutocomplete.CSS.searchItemName],
-        {
-          innerText: item.name || item.index,
-        }
-      );
+      const searchItemName = Dom.make("div", [Snippets.CSS.searchItemName], {
+        innerText: item.name || item.index,
+      });
 
       searchItem.appendChild(searchItemName);
 
@@ -693,7 +672,7 @@ export default class LinkAutocomplete {
       if (item.desc) {
         const searchItemDescription = Dom.make(
           "div",
-          [LinkAutocomplete.CSS.searchItemDescription],
+          [Snippets.CSS.searchItemDescription],
           {
             innerText: item.desc[0],
           }
@@ -726,10 +705,6 @@ export default class LinkAutocomplete {
     if (!element.dataset || !element.dataset["index"]) {
       return;
     }
-    /**
-     * Get link's href
-     */
-    const index = element.dataset["index"];
 
     /**
      * Restore origin selection
@@ -742,43 +717,35 @@ export default class LinkAutocomplete {
     /**
      * Create a link by default browser's function
      */
-    const newSnippet = this.createSnippetFromSelection(index);
+    this.createSnippetFromSelection(element.dataset);
 
     /**
-     * Collapse selection and close toolbar
+     * Close toolbar
      */
-    this.selection.collapseToEnd();
     this.api.inlineToolbar.close();
   }
 
-  createSnippetFromSelection(index) {
+  createSnippetFromSelection(dataset) {
     let sel, range, span;
 
-    if (window.getSelection) {
-      sel = window.getSelection();
+    if (window.getSelection && (sel = window.getSelection()).rangeCount) {
+      range = sel.getRangeAt(0);
+      let originalText = range.toString();
+      range.deleteContents();
+      range.collapse(true);
 
-      if (sel.rangeCount) {
-        range = sel.getRangeAt(0);
-
-        let originalText = range.toString();
-
-        range.deleteContents();
-
-        let span = document.createElement("span");
-        span.innerText = originalText;
-        span.classList.add("ts-snippet");
-        span.classList.add("ts-snippet-" + index);
-
-        range.insertNode(span);
-      }
-    } else if (document.selection && document.selection.createRange) {
-      range = document.selection.createRange();
-      let span = document.createElement("span");
-      span.innerText = "";
-      span.classList.add("snippet-" + index);
+      span = document.createElement("span");
+      span.appendChild(document.createTextNode(originalText));
+      span.classList.add("ts-snippet");
+      span.classList.add("ts-snippet-" + dataset["index"]);
+      span.dataset["name"] = dataset["name"];
+      span.dataset["description"] = dataset["desc"];
       range.insertNode(span);
     }
-
+    range.setStartAfter(span);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
     return span;
   }
 
@@ -804,7 +771,7 @@ export default class LinkAutocomplete {
      *
      * @type {boolean}
      */
-    const isLinkSelected = this.nodes.toolButtonUnlink.classList.contains(
+    const isSnippetSelected = this.nodes.toolButtonUnlink.classList.contains(
       this.api.styles.inlineToolButtonActive
     );
 
@@ -817,7 +784,7 @@ export default class LinkAutocomplete {
     /**
      * Check if link is in the selection
      */
-    if (!isLinkSelected) {
+    if (!isSnippetSelected) {
       /**
        * Show focused input field
        */
@@ -825,9 +792,9 @@ export default class LinkAutocomplete {
       this.nodes.inputField.focus();
     } else {
       /**
-       * Get the nearest link tag
+       * Get the nearest snippet tag
        */
-      const parentAnchor = this.selection.findParentTag("span");
+      const parentAnchor = this.selection.findParentTag(this.tagName);
 
       /**
        * Expand selection
@@ -835,15 +802,27 @@ export default class LinkAutocomplete {
       this.selection.expandToTag(parentAnchor);
 
       /**
-       * Remove the link
+       * Remove the snippet
        */
-      document.execCommand("unlink");
+      this.removeSnippetFromSelection(parentAnchor);
 
       /**
        * Remove fake selection and close toolbar
        */
       this.selection.removeFakeBackground();
       this.api.inlineToolbar.close();
+    }
+  }
+
+  removeSnippetFromSelection(parentAnchor) {
+    let sel, range, span;
+
+    if (window.getSelection && (sel = window.getSelection()).rangeCount) {
+      range = this.selection.get().getRangeAt(0);
+      let originalText = range.toString();
+      console.log(originalText);
+      range.deleteContents();
+      range.collapse(true);
     }
   }
 
@@ -855,7 +834,6 @@ export default class LinkAutocomplete {
    */
   checkState(selection) {
     const text = selection.anchorNode;
-
     /**
      * Selection is empty
      */
@@ -920,7 +898,7 @@ export default class LinkAutocomplete {
     /**
      * If not "isVisible" then add "hidden" class
      */
-    element.classList.toggle(LinkAutocomplete.CSS.hidden, !isVisible);
+    element.classList.toggle(Snippets.CSS.hidden, !isVisible);
   }
 
   /**
@@ -966,8 +944,8 @@ export default class LinkAutocomplete {
    *
    * @returns {boolean}
    */
-  isServerEnabled() {
-    return !!this.searchEndpointUrl;
+  isThereFilesToSearch() {
+    return !!this.filesToSearch;
   }
 
   /**
