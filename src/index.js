@@ -717,7 +717,7 @@ export default class Snippets {
     /**
      * Create a link by default browser's function
      */
-    this.createSnippetFromSelection(element.dataset);
+    this.wrap(element.dataset);
 
     /**
      * Close toolbar
@@ -725,28 +725,28 @@ export default class Snippets {
     this.api.inlineToolbar.close();
   }
 
-  createSnippetFromSelection(dataset) {
-    let sel, range, span;
+  wrap(dataset) {
+    let sel, range, span, originalHtml;
 
     if (window.getSelection && (sel = window.getSelection()).rangeCount) {
       range = sel.getRangeAt(0);
-      let originalText = range.toString();
-      range.deleteContents();
-      range.collapse(true);
 
-      span = document.createElement("span");
-      span.appendChild(document.createTextNode(originalText));
+      span = document.createElement(this.tagName);
+
       span.classList.add("ts-snippet");
       span.classList.add("ts-snippet-" + dataset["index"]);
+
       span.dataset["name"] = dataset["name"];
       span.dataset["description"] = dataset["desc"];
+
+      originalHtml = range.extractContents();
+
+      span.appendChild(originalHtml);
+
       range.insertNode(span);
+
+      this.api.selection.expandToTag(span);
     }
-    range.setStartAfter(span);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    return span;
   }
 
   /**
@@ -794,17 +794,15 @@ export default class Snippets {
       /**
        * Get the nearest snippet tag
        */
-      const parentAnchor = this.selection.findParentTag(this.tagName);
-
-      /**
-       * Expand selection
-       */
-      this.selection.expandToTag(parentAnchor);
+      const termWrapper = this.api.selection.findParentTag(
+        this.tagName,
+        "ts-snippet"
+      );
 
       /**
        * Remove the snippet
        */
-      this.removeSnippetFromSelection(parentAnchor);
+      this.unwrap(termWrapper);
 
       /**
        * Remove fake selection and close toolbar
@@ -814,16 +812,32 @@ export default class Snippets {
     }
   }
 
-  removeSnippetFromSelection(parentAnchor) {
-    let sel, range, span;
+  unwrap(termWrapper) {
+    /**
+     * Expand selection to all term-tag
+     */
+    this.api.selection.expandToTag(termWrapper);
 
-    if (window.getSelection && (sel = window.getSelection()).rangeCount) {
-      range = this.selection.get().getRangeAt(0);
-      let originalText = range.toString();
-      console.log(originalText);
-      range.deleteContents();
-      range.collapse(true);
-    }
+    const sel = window.getSelection();
+    const range = sel.getRangeAt(0);
+
+    const unwrappedContent = range.extractContents();
+
+    /**
+     * Remove empty term-tag
+     */
+    termWrapper.parentNode.removeChild(termWrapper);
+
+    /**
+     * Insert extracted content
+     */
+    range.insertNode(unwrappedContent);
+
+    /**
+     * Restore selection
+     */
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   /**
