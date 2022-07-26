@@ -1,0 +1,4 @@
+/*!
+ * Codex JavaScript Notification module
+ * https://github.com/codex-team/js-notifier
+ */
