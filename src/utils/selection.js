@@ -253,8 +253,12 @@ export class SelectionUtils {
   /**
    * Sets fake background
    */
-  setFakeBackground(color) {
-    document.execCommand(this.commandBackground, false, color);
+  setFakeBackground() {
+    let selectionColor =
+      getComputedStyle(document.body).getPropertyValue(
+        "--script-selected-color"
+      ) || "#a8d6ff";
+    document.execCommand(this.commandBackground, false, selectionColor);
 
     this.isFakeBackgroundEnabled = true;
   }

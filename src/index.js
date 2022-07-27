@@ -87,7 +87,7 @@ export default class Snippets {
    * @returns {string}
    */
   get shortcut() {
-    return "CMD+K";
+    return "CMD+L";
   }
 
   /**
@@ -141,7 +141,7 @@ export default class Snippets {
      * Config params
      */
     this.filesToSearch = this.config.filesToSearch || [];
-    this.selectionColor = this.config.selectionColor || "#a8d6ff";
+
     /**
      * Tool's nodes list
      *
@@ -772,7 +772,7 @@ export default class Snippets {
     /**
      * Create a fake selection
      */
-    this.selection.setFakeBackground(this.selectionColor);
+    this.selection.setFakeBackground();
     this.selection.save();
 
     /**
@@ -801,6 +801,7 @@ export default class Snippets {
       /**
        * Remove fake selection and close toolbar
        */
+      this.selection.restore;
       this.selection.removeFakeBackground();
       this.api.inlineToolbar.close();
     }
