@@ -87,7 +87,8 @@ export default class Snippets {
    * @returns {string}
    */
   get shortcut() {
-    return "CMD+L";
+    console.log("hey, i found shortcut");
+    return "Ctrl+L";
   }
 
   /**
