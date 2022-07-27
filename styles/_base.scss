@@ -7,7 +7,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
 .ts-snippet {
   font-weight: bold;
   cursor: pointer;
-  color: crimson;
+
+  @include ts_snippet_main_mixin;
 }
 
 .ts-snippets {
@@ -15,11 +16,15 @@ $loader-color: rgba(29, 32, 43, 0.3);
     display: block;
     width: 16px;
     height: 16px;
+
+    @include ts_snippets_icon_mixin;
   }
 
   &__actions-wrapper {
     border-top: 1px solid $color-gray-line;
     width: 200px;
+
+    @include ts_snippets_actions_mixin;
   }
 
   &__field {
@@ -43,6 +48,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
       &::placeholder {
         color: $color-text-second;
       }
+
+      @include ts_snippets_input_mixin;
     }
 
     /**
@@ -66,11 +73,15 @@ $loader-color: rgba(29, 32, 43, 0.3);
       opacity: 0;
       will-change: transform, opacity;
       box-sizing: border-box;
+
+      @include ts_snippets_loader_mixin;
     }
 
     &--loading::after {
       animation: ts-snippets__spin 1s linear infinite;
       opacity: 1;
+
+      @include ts_snippets_loader_loading_mixin;
     }
   }
 
@@ -94,6 +105,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
     &:hover,
     &--selected {
       background-color: $color-bg-gray;
+
+      @include ts_snippets_search_item_hover_mixin;
     }
 
     &-name {
@@ -103,6 +116,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      @include ts_snippets_search_item_name_mixin;
     }
 
     &-description {
@@ -115,7 +130,11 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      @include ts_snippets_search_item_description_mixin;
     }
+
+    @include ts_snippets_search_item_mixin;
   }
 
   &__hidden {
@@ -131,10 +150,14 @@ $loader-color: rgba(29, 32, 43, 0.3);
       font-size: 13px;
       padding: 10px;
       box-sizing: border-box;
+
+      @include ts_snippets_link_data_wrapper_mixin;
     }
 
     &-title-wrapper {
       margin-bottom: 10px;
+
+      @include ts_snippets_link_data_title_wrapper_mixin;
     }
 
     &-name {
@@ -144,6 +167,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      @include ts_snippets_link_data_name_mixin;
     }
 
     &-description {
@@ -156,6 +181,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      @include ts_snippets_link_data_description_mixin;
     }
 
     &-url {
@@ -164,6 +191,8 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      @include ts_snippets_link_data_url_mixin;
     }
   }
 }

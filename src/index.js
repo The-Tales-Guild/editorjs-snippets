@@ -1,9 +1,4 @@
 /**
- * Build styles
- */
-import "./../styles/index.scss";
-
-/**
  * Import deps
  */
 import notifier from "codex-notifier";
