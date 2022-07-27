@@ -140,9 +140,8 @@ export default class Snippets {
     /**
      * Config params
      */
-    this.filesToSearch = this.config.filesToSearch;
-    this.searchQueryParam = this.config.queryParam;
-
+    this.filesToSearch = this.config.filesToSearch || [];
+    this.selectionColor = this.config.selectionColor || "#a8d6ff";
     /**
      * Tool's nodes list
      *
@@ -773,7 +772,7 @@ export default class Snippets {
     /**
      * Create a fake selection
      */
-    this.selection.setFakeBackground();
+    this.selection.setFakeBackground(this.selectionColor);
     this.selection.save();
 
     /**
@@ -918,15 +917,6 @@ export default class Snippets {
    * @returns {Promise<SearchItemData[]>}
    */
   async searchRequest(searchString) {
-    /**
-     * Compose query string
-     *
-     * @type {string}
-     */
-    const queryString = new URLSearchParams({
-      [this.searchQueryParam]: searchString,
-    }).toString();
-
     try {
       //Open JSON
       const conditions = await require("../src/api/5e-SRD-Conditions.json");

@@ -1,4 +1,4 @@
-import * as Dom from './dom';
+import * as Dom from "./dom";
 
 /**
  * Lib for working with selection
@@ -30,8 +30,8 @@ export class SelectionUtils {
     /**
      * Native Document's commands for fake background
      */
-    this.commandBackground = 'backColor';
-    this.commandRemoveFormat = 'removeFormat';
+    this.commandBackground = "backColor";
+    this.commandRemoveFormat = "removeFormat";
   }
 
   /**
@@ -121,7 +121,7 @@ export class SelectionUtils {
    */
   static get rect() {
     let sel = document.selection,
-        range;
+      range;
 
     let rect = {
       x: 0,
@@ -130,7 +130,7 @@ export class SelectionUtils {
       height: 0,
     };
 
-    if (sel && sel.type !== 'Control') {
+    if (sel && sel.type !== "Control") {
       range = sel.createRange();
       rect.x = range.boundingLeft;
       rect.y = range.boundingTop;
@@ -141,7 +141,7 @@ export class SelectionUtils {
     }
 
     if (!window.getSelection) {
-      console.warn('Method window.getSelection is not supported');
+      console.warn("Method window.getSelection is not supported");
 
       return rect;
     }
@@ -149,7 +149,7 @@ export class SelectionUtils {
     sel = window.getSelection();
 
     if (sel.rangeCount === null || isNaN(sel.rangeCount)) {
-      console.warn('Method SelectionUtils.rangeCount is not supported');
+      console.warn("Method SelectionUtils.rangeCount is not supported");
 
       return rect;
     }
@@ -165,12 +165,12 @@ export class SelectionUtils {
     }
     // Fall back to inserting a temporary element
     if (rect.x === 0 && rect.y === 0) {
-      const span = document.createElement('span');
+      const span = document.createElement("span");
 
       if (span.getBoundingClientRect) {
         // Ensure span has dimensions and position by
         // adding a zero-width space character
-        span.appendChild(document.createTextNode('\u200b'));
+        span.appendChild(document.createTextNode("\u200b"));
         range.insertNode(span);
         rect = span.getBoundingClientRect();
 
@@ -192,7 +192,7 @@ export class SelectionUtils {
    * @returns {string}
    */
   static get text() {
-    return window.getSelection ? window.getSelection().toString() : '';
+    return window.getSelection ? window.getSelection().toString() : "";
   }
 
   /**
@@ -253,8 +253,8 @@ export class SelectionUtils {
   /**
    * Sets fake background
    */
-  setFakeBackground() {
-    document.execCommand(this.commandBackground, false, '#a8d6ff');
+  setFakeBackground(color) {
+    document.execCommand(this.commandBackground, false, color);
 
     this.isFakeBackgroundEnabled = true;
   }
@@ -351,7 +351,11 @@ export class SelectionUtils {
           /**
            * Optional additional check for class-name mismatching
            */
-          if (className && parent.classList && !parent.classList.contains(className)) {
+          if (
+            className &&
+            parent.classList &&
+            !parent.classList.contains(className)
+          ) {
             parentTag = null;
           }
 
