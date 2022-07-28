@@ -756,6 +756,17 @@ export default class Snippets {
       return;
     }
 
+    if (
+      !!document.getElementsByClassName(
+        "ce-link-autocomplete__actions-wrapper"
+      )[0] &&
+      !document
+        .getElementsByClassName("ce-link-autocomplete__actions-wrapper")[0]
+        .classList.contains("ce-link-autocomplete__hidden")
+    ) {
+      this.api.inlineToolbar.close();
+      console.log("Link already opened");
+    }
     /**
      * Show actions wrapper
      */
