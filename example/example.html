@@ -105,8 +105,26 @@
           link: {
             class: Snippets,
             config: {
-              endpoint: "http://localhost:3000/",
-              queryParam: "search",
+              filesToSearch: [
+                {
+                  //origin: "5e SRD",
+                  category: "Condition",
+                  path: "./assets/api/5e-SRD-Conditions.json",
+                  propertiesToSearch: ["index", "name"],
+                  nameToSave: "name",
+                  descriptionToSave: "desc",
+                  colorDot: "red",
+                },
+                {
+                  origin: "5e SRD",
+                  category: "Skill",
+                  path: "./assets/api/5e-SRD-Skills.json",
+                  propertiesToSearch: ["index", "name"],
+                  nameToSave: "name",
+                  descriptionToSave: "desc",
+                  colorDot: "green",
+                },
+              ],
             },
           },
         },

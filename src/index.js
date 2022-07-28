@@ -70,6 +70,9 @@ export default class Snippets {
         class: true,
         "data-name": true,
         "data-description": true,
+        "data-category": true,
+        "data-origin": true,
+        "data-colorDot": true,
       },
     };
   }
@@ -115,6 +118,8 @@ export default class Snippets {
       searchItemSelected: "ts-snippets__search-item--selected",
       searchItemName: "ts-snippets__search-item-name",
       searchItemDescription: "ts-snippets__search-item-description",
+      searchItemColorDot: "ts-snippets__search-item-color-dot",
+      searchItemOrigin: "ts-snippets__search-item-origin",
 
       linkDataWrapper: "ts-snippets__link-data-wrapper",
       linkDataTitleWrapper: "ts-snippets__link-data-title-wrapper",
@@ -143,6 +148,24 @@ export default class Snippets {
      * Config params
      */
     this.filesToSearch = this.config.filesToSearch || [];
+
+    /**
+     * filesToSearch structure
+     *
+     * [
+     *  ...
+     *  {
+     *    origin: "5e SRD"
+     *    category: "Category Name",
+     *    path: "./my-api.json"
+     *    propertiesToSearch: ["param1", "param2"]
+     *    nameToSave: "",
+     *    descriptionToSave: "",
+     *    colorDot: "#C0FFEE"
+     *  }
+     *  ...
+     * ]
+     */
 
     /**
      * Tool's nodes list
@@ -335,7 +358,7 @@ export default class Snippets {
 
     /**
      * Render link data block
-     * TODO: CHange this block accordingly
+     * TODO: Change this block accordingly
      */
     this.nodes.linkDataWrapper = Dom.make("div", Snippets.CSS.linkDataWrapper);
     this.toggleVisibility(this.nodes.linkDataWrapper, false);
@@ -460,7 +483,6 @@ export default class Snippets {
       this.toggleLoadingState(true);
       try {
         const searchDataItems = await this.searchRequest(searchString);
-
         /**
          * Generate list
          */
@@ -622,7 +644,7 @@ export default class Snippets {
    * @param {SearchItemData[]} items — items to be shown
    * @returns {void}
    */
-  generateSearchList(items = []) {
+  generateSearchList(itemsListPerFile = []) {
     /**
      * Clear list first
      */
@@ -631,60 +653,94 @@ export default class Snippets {
     /**
      * If items data is not an array
      */
-    if (!Utils.isArray(items)) {
+    if (!Utils.isArray(itemsListPerFile)) {
       notifier.show({
         message: DICTIONARY.invalidServerData,
         style: "error",
       });
-
       return;
     }
 
     /**
      * If no items returned
      */
-    if (items.length === 0) {
+    if (itemsListPerFile.length === 0) {
       return;
     }
-
     /**
-     * Fill up search list by new elements
+     * For each file
      */
-    items.forEach((item) => {
-      const searchItem = Dom.make("div", [Snippets.CSS.searchItem]);
-
+    let i = 0;
+    itemsListPerFile.forEach((items) => {
       /**
-       * Create a name for a link
+       * Fill up search list by new elements
        */
-      const searchItemName = Dom.make("div", [Snippets.CSS.searchItemName], {
-        innerText: item.name || item.index,
-      });
+      items.forEach((item) => {
+        const searchItem = Dom.make("div", [Snippets.CSS.searchItem]);
 
-      searchItem.appendChild(searchItemName);
+        /**
+         * Create a name for a link
+         */
+        const searchItemName = Dom.make("div", [Snippets.CSS.searchItemName], {
+          innerText: item[this.filesToSearch[i].nameToSave] || item.index,
+        });
+        searchItem.dataset["name"] = item[this.filesToSearch[i].nameToSave]
+          ? item[this.filesToSearch[i].nameToSave]
+          : item.index;
 
-      /**
-       * Create a description element
-       */
-      if (item.desc) {
-        const searchItemDescription = Dom.make(
-          "div",
-          [Snippets.CSS.searchItemDescription],
-          {
-            innerText: item.desc[0],
+        searchItem.appendChild(searchItemName);
+
+        /**
+         * Create a description element
+         */
+        if (item[this.filesToSearch[i].descriptionToSave]) {
+          searchItem.dataset["description"] =
+            item[this.filesToSearch[i].descriptionToSave];
+        }
+        //FIXME: Careful with homemade rules with innerHTML
+        if (this.filesToSearch[i].category) {
+          const searchItemMetadata = Dom.make(
+            "div",
+            [Snippets.CSS.searchItemDescription],
+            {
+              innerHTML: this.filesToSearch[i].origin
+                ? this.filesToSearch[i].category + " -&nbsp;"
+                : this.filesToSearch[i].category + "&nbsp;",
+            }
+          );
+
+          if (this.filesToSearch[i].colorDot) {
+            const searchItemColorDot = Dom.make("span", [
+              Snippets.CSS.searchItemColorDot,
+            ]);
+
+            searchItemColorDot.style.backgroundColor =
+              this.filesToSearch[i].colorDot;
+            searchItemMetadata.appendChild(searchItemColorDot);
+            searchItem.dataset["colorDot"] = this.filesToSearch[i].colorDot;
           }
-        );
 
-        searchItem.appendChild(searchItemDescription);
-      }
+          if (this.filesToSearch[i].origin) {
+            const searchItemOrigin = Dom.make(
+              "span",
+              [Snippets.CSS.searchItemOrigin],
+              {
+                innerText: this.filesToSearch[i].origin,
+              }
+            );
 
-      /**
-       * Save all keys to item's dataset
-       */
-      Object.keys(item).forEach((key) => {
-        searchItem.dataset[key] = item[key];
+            searchItemMetadata.appendChild(searchItemOrigin);
+            searchItem.dataset["origin"] = this.filesToSearch[i].origin;
+          }
+
+          searchItem.appendChild(searchItemMetadata);
+          searchItem.dataset["category"] = this.filesToSearch[i].category;
+        }
+
+        this.nodes.searchResults.appendChild(searchItem);
       });
 
-      this.nodes.searchResults.appendChild(searchItem);
+      i++;
     });
   }
 
@@ -698,7 +754,7 @@ export default class Snippets {
     /**
      * If no useful dataset info was given then do nothing
      */
-    if (!element.dataset || !element.dataset["index"]) {
+    if (!element.dataset || !element.dataset["name"]) {
       return;
     }
 
@@ -733,7 +789,10 @@ export default class Snippets {
       span.classList.add("ts-snippet-" + dataset["index"]);
 
       span.dataset["name"] = dataset["name"];
-      span.dataset["description"] = dataset["desc"];
+      span.dataset["description"] = dataset["description"];
+      span.dataset["category"] = dataset["category"];
+      span.dataset["origin"] = dataset["origin"];
+      span.dataset["colorDot"] = dataset["colorDot"];
 
       originalHtml = range.extractContents();
 
@@ -886,7 +945,7 @@ export default class Snippets {
      */
     this.nodes.linkDataName.innerText = parentA.dataset.name || "";
     this.nodes.linkDataDescription.innerText =
-      parentA.dataset.description || "";
+      parentA.dataset.category + " - " + parentA.dataset.origin || "";
     this.nodes.linkDataURL.innerText = parentA.href || "";
     this.nodes.linkDataURL.href = parentA.href || "";
     this.nodes.linkDataURL.target = "_blank";
@@ -935,22 +994,40 @@ export default class Snippets {
    * @returns {Promise<SearchItemData[]>}
    */
   async searchRequest(searchString) {
-    try {
-      //Open JSON
-      const conditions = await require("../src/api/5e-SRD-Conditions.json");
+    if (this.isThereFilesToSearch) {
+      let arrayOfMatches = [];
 
-      //Find matches that starts with searchString
-      let matches = conditions.filter((condition) => {
-        const regex = new RegExp(`^${searchString}`, "gi");
-        return condition.index.match(regex) || condition.name.match(regex);
-      });
+      for (let i = 0; i < this.filesToSearch.length; i++) {
+        let file = this.filesToSearch[i];
 
-      return matches;
-    } catch (e) {
-      notifier.show({
-        message: `${DICTIONARY.searchRequestError} "${e.message}"`,
-        style: "error",
-      });
+        try {
+          //Open JSON
+          const response = await fetch(file.path);
+          const fileContent = await response.json();
+
+          //Find matches that starts with searchString
+          let matches = fileContent.filter((item) => {
+            const regex = new RegExp(`^${searchString}`, "gi");
+
+            //Check for all propertiesToSearch if there is a match
+            let isThereAMatch = false;
+            file.propertiesToSearch.forEach((property) => {
+              isThereAMatch = isThereAMatch || item[property].match(regex);
+            });
+
+            return isThereAMatch;
+          });
+
+          arrayOfMatches.push(matches);
+        } catch (e) {
+          notifier.show({
+            message: `${DICTIONARY.searchRequestError} "${e.message}"`,
+            style: "error",
+          });
+        }
+      }
+
+      return arrayOfMatches;
     }
 
     return [];
@@ -961,7 +1038,7 @@ export default class Snippets {
    *
    * @returns {boolean}
    */
-  isThereFilesToSearch() {
+  get isThereFilesToSearch() {
     return !!this.filesToSearch;
   }
 

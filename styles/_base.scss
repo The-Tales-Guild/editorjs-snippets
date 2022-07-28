@@ -130,8 +130,26 @@ $loader-color: rgba(29, 32, 43, 0.3);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
 
       @include ts_snippets_search_item_description_mixin;
+    }
+
+    &-color-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin: 2px 3px 0 1px;
+      display: inline-block;
+
+      @include ts_snippets_search_item_color_dot_mixin;
+    }
+
+    &-origin {
+      @include ts_snippets_search_item_origin_mixin;
     }
 
     @include ts_snippets_search_item_mixin;

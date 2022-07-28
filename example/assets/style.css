@@ -93,6 +93,17 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.ts-snippets__search-item-color-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin: 2px 3px 0 1px;
+  display: inline-block;
 }
 .ts-snippets__hidden {
   display: none;
