@@ -756,6 +756,11 @@ export default class Snippets {
       return;
     }
 
+    /**
+     * Check if link actions already opened.
+     * If true, closes inline toolbar
+     * TODO: Find a way not to close toolbar.
+     */
     if (
       !!document.getElementsByClassName(
         "ce-link-autocomplete__actions-wrapper"
@@ -765,7 +770,6 @@ export default class Snippets {
         .classList.contains("ce-link-autocomplete__hidden")
     ) {
       this.api.inlineToolbar.close();
-      console.log("Link already opened");
     }
     /**
      * Show actions wrapper
