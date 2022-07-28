@@ -68,6 +68,8 @@ export default class Snippets {
     return {
       span: {
         class: true,
+        "data-name": true,
+        "data-description": true,
       },
     };
   }
@@ -87,7 +89,6 @@ export default class Snippets {
    * @returns {string}
    */
   get shortcut() {
-    console.log("hey, i found shortcut");
     return "Ctrl+L";
   }
 
