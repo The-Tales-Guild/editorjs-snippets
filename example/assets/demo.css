@@ -8,11 +8,11 @@ body {
   font-size: 14px;
   line-height: 1.5em;
   margin: 0;
-  --script-selected-color: #000;
+  --script-selected-color: #d4ecff;
 }
 
 .--script-selected {
-  background-color: red;
+  background-color: #d4ecff;
 }
 
 .ce-example {

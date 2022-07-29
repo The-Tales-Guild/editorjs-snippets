@@ -68,11 +68,12 @@ export default class Snippets {
     return {
       span: {
         class: true,
+        style: true,
         "data-name": true,
         "data-description": true,
         "data-category": true,
         "data-origin": true,
-        "data-colorDot": true,
+        "data-color-dot": true,
       },
     };
   }
@@ -118,6 +119,7 @@ export default class Snippets {
       searchItemSelected: "ts-snippets__search-item--selected",
       searchItemName: "ts-snippets__search-item-name",
       searchItemDescription: "ts-snippets__search-item-description",
+      searchItemCategory: "ts-snippets__search-item-category",
       searchItemColorDot: "ts-snippets__search-item-color-dot",
       searchItemOrigin: "ts-snippets__search-item-origin",
 
@@ -125,7 +127,9 @@ export default class Snippets {
       linkDataTitleWrapper: "ts-snippets__link-data-title-wrapper",
       linkDataName: "ts-snippets__link-data-name",
       linkDataDescription: "ts-snippets__link-data-description",
-      linkDataURL: "ts-snippets__link-data-url",
+      linkDataCategory: "ts-snippets__link-data-category",
+      linkDataColorDot: "ts-snippets__link-data-color-dot",
+      linkDataOrigin: "ts-snippets__link-data-origin",
     };
   }
 
@@ -161,7 +165,9 @@ export default class Snippets {
      *    propertiesToSearch: ["param1", "param2"]
      *    nameToSave: "",
      *    descriptionToSave: "",
-     *    colorDot: "#C0FFEE"
+     *    colorDot: "#C0FFEE",
+     *    textColor: "#FACADE",
+     *    fontStyle: true,
      *  }
      *  ...
      * ]
@@ -187,9 +193,11 @@ export default class Snippets {
      *   |    |- ...
      *   |
      *   |- linkDataWrapper
-     *        |- URL
      *        |- name
      *        |- description
+     *             |- category
+     *             |- colorDot
+     *             |- origin
      */
     this.nodes = {
       toolButtons: null,
@@ -206,7 +214,9 @@ export default class Snippets {
       linkDataTitleWrapper: null,
       linkDataName: null,
       linkDataDescription: null,
-      linkDataURL: null,
+      linkDataCategory: null,
+      linkDataColorDot: null,
+      linkDataOrigin: null,
     };
 
     /**
@@ -378,9 +388,22 @@ export default class Snippets {
     );
     this.nodes.linkDataTitleWrapper.appendChild(this.nodes.linkDataDescription);
 
-    this.nodes.linkDataURL = Dom.make("A", Snippets.CSS.linkDataURL);
-    this.nodes.linkDataWrapper.appendChild(this.nodes.linkDataURL);
+    this.nodes.linkDataCategory = Dom.make(
+      "span",
+      Snippets.CSS.linkDataCategory
+    );
 
+    this.nodes.linkDataDescription.appendChild(this.nodes.linkDataCategory);
+
+    this.nodes.linkDataColorDot = Dom.make(
+      "span",
+      Snippets.CSS.linkDataColorDot
+    );
+
+    this.nodes.linkDataDescription.appendChild(this.nodes.linkDataColorDot);
+
+    this.nodes.linkDataOrigin = Dom.make("span", Snippets.CSS.linkDataOrigin);
+    this.nodes.linkDataDescription.appendChild(this.nodes.linkDataOrigin);
     /**
      * Compose actions block
      */
@@ -697,45 +720,67 @@ export default class Snippets {
           searchItem.dataset["description"] =
             item[this.filesToSearch[i].descriptionToSave];
         }
-        //FIXME: Careful with homemade rules with innerHTML
+
+        const searchItemMetadata = Dom.make("div", [
+          Snippets.CSS.searchItemDescription,
+        ]);
+        searchItem.appendChild(searchItemMetadata);
+
+        /**
+         * Create a category span
+         */
         if (this.filesToSearch[i].category) {
-          const searchItemMetadata = Dom.make(
-            "div",
-            [Snippets.CSS.searchItemDescription],
+          const searchItemCategory = Dom.make(
+            "span",
+            [Snippets.CSS.searchItemCategory],
             {
+              //FIXME: Careful with homemade rules with innerHTML
               innerHTML: this.filesToSearch[i].origin
                 ? this.filesToSearch[i].category + " -&nbsp;"
                 : this.filesToSearch[i].category + "&nbsp;",
             }
           );
-
-          if (this.filesToSearch[i].colorDot) {
-            const searchItemColorDot = Dom.make("span", [
-              Snippets.CSS.searchItemColorDot,
-            ]);
-
-            searchItemColorDot.style.backgroundColor =
-              this.filesToSearch[i].colorDot;
-            searchItemMetadata.appendChild(searchItemColorDot);
-            searchItem.dataset["colorDot"] = this.filesToSearch[i].colorDot;
-          }
-
-          if (this.filesToSearch[i].origin) {
-            const searchItemOrigin = Dom.make(
-              "span",
-              [Snippets.CSS.searchItemOrigin],
-              {
-                innerText: this.filesToSearch[i].origin,
-              }
-            );
-
-            searchItemMetadata.appendChild(searchItemOrigin);
-            searchItem.dataset["origin"] = this.filesToSearch[i].origin;
-          }
-
-          searchItem.appendChild(searchItemMetadata);
+          searchItemMetadata.appendChild(searchItemCategory);
           searchItem.dataset["category"] = this.filesToSearch[i].category;
         }
+
+        /**
+         * Create a colorDot span
+         */
+        if (this.filesToSearch[i].colorDot) {
+          const searchItemColorDot = Dom.make("span", [
+            Snippets.CSS.searchItemColorDot,
+          ]);
+
+          searchItemColorDot.style.backgroundColor =
+            this.filesToSearch[i].colorDot;
+          searchItemMetadata.appendChild(searchItemColorDot);
+          searchItem.dataset["colorDot"] = this.filesToSearch[i].colorDot;
+        }
+
+        /**
+         * Create an origin span
+         */
+        if (this.filesToSearch[i].origin) {
+          const searchItemOrigin = Dom.make(
+            "span",
+            [Snippets.CSS.searchItemOrigin],
+            {
+              innerText: this.filesToSearch[i].origin,
+            }
+          );
+
+          searchItemMetadata.appendChild(searchItemOrigin);
+          searchItem.dataset["origin"] = this.filesToSearch[i].origin;
+        }
+
+        /**
+         * Add other dataset that are not displayed in search
+         */
+        searchItem.dataset["textColor"] =
+          this.filesToSearch[i].textColor || "inherit";
+        searchItem.dataset["fontStyle"] =
+          this.filesToSearch[i].fontStyle || "inherit";
 
         this.nodes.searchResults.appendChild(searchItem);
       });
@@ -793,6 +838,8 @@ export default class Snippets {
       span.dataset["category"] = dataset["category"];
       span.dataset["origin"] = dataset["origin"];
       span.dataset["colorDot"] = dataset["colorDot"];
+      span.style.color = dataset["textColor"];
+      span.style.fontStyle = dataset["fontStyle"];
 
       originalHtml = range.extractContents();
 
@@ -944,16 +991,23 @@ export default class Snippets {
      * Fill up link data block
      */
     this.nodes.linkDataName.innerText = parentA.dataset.name || "";
-    this.nodes.linkDataDescription.innerText =
-      parentA.dataset.category + " - " + parentA.dataset.origin || "";
-    this.nodes.linkDataURL.innerText = parentA.href || "";
-    this.nodes.linkDataURL.href = parentA.href || "";
-    this.nodes.linkDataURL.target = "_blank";
+    //FIXME: Careful here with innerHTML
+    this.nodes.linkDataCategory.innerHTML = parentA.dataset.origin
+      ? parentA.dataset.category + " -&nbsp;" || ""
+      : parentA.dataset.category || "";
+    this.nodes.linkDataOrigin.innerText = parentA.dataset.origin || "";
+
+    if (parentA.dataset.colorDot) {
+      this.nodes.linkDataColorDot.style.backgroundColor =
+        parentA.dataset.colorDot;
+    } else {
+      this.nodes.linkDataColorDot.style.display = "none";
+    }
 
     /**
      * If link has name or description then show title wrapper
      */
-    if (parentA.dataset.name || parentA.dataset.description) {
+    if (parentA.dataset.name || parentA.dataset.category) {
       this.toggleVisibility(this.nodes.linkDataTitleWrapper, true);
     }
 
