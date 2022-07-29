@@ -71,6 +71,7 @@ export default class Snippets {
         style: true,
         "data-name": true,
         "data-description": true,
+        "data-path": true,
         "data-category": true,
         "data-origin": true,
         "data-color-dot": true,
@@ -777,6 +778,7 @@ export default class Snippets {
         /**
          * Add other dataset that are not displayed in search
          */
+        searchItem.dataset["path"] = this.filesToSearch[i].path || "";
         searchItem.dataset["textColor"] =
           this.filesToSearch[i].textColor || "inherit";
         searchItem.dataset["fontStyle"] =
@@ -833,11 +835,12 @@ export default class Snippets {
       span.classList.add("ts-snippet");
       span.classList.add("ts-snippet-" + dataset["index"]);
 
-      span.dataset["name"] = dataset["name"];
-      span.dataset["description"] = dataset["description"];
-      span.dataset["category"] = dataset["category"];
-      span.dataset["origin"] = dataset["origin"];
-      span.dataset["colorDot"] = dataset["colorDot"];
+      span.dataset["name"] = dataset["name"] || "";
+      span.dataset["description"] = dataset["description"] || "";
+      span.dataset["path"] = dataset["path"] || "";
+      span.dataset["category"] = dataset["category"] || "";
+      span.dataset["origin"] = dataset["origin"] || "";
+      span.dataset["colorDot"] = dataset["colorDot"] || "";
       span.style.color = dataset["textColor"];
       span.style.fontStyle = dataset["fontStyle"];
 
